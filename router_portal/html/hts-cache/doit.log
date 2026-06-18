@@ -1,0 +1,8 @@
+https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.google.com%2Fwebhp%3Fhl%3Dpl%26sa%3DX%26ved%3D0ahUKEwimza_x5OuNAxVrGhAIHRvSF4EQPAgI&dsh=S-1942595067%3A1749729007943672&ec=futura_exp_og_so_72776762_e&flowEntry=ServiceLogin&flowName=GlifWebSignIn&hl=pl&ifkv=AdBytiPPb1O39J6JXT_KO2WbJ2hwludnugbZomk_3i2zBGD3hYS3B8fOB-Q95aeJOPtGpAM7XiZXog -O /home/kali/router_nds/html -r3
+File generated automatically on Thu, 12 Jun 2025 13:55:02, do NOT edit
+
+To update a mirror, just launch httrack without any parameters
+The existing cache will be used (and modified)
+To have other options, retype all parameters and launch HTTrack
+To continue an interrupted mirror, just launch httrack without any parameters
+

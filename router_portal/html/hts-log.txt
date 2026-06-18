@@ -1,0 +1,13 @@
+HTTrack3.49-6 launched on Thu, 12 Jun 2025 13:55:02 at https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.google.com%2Fwebhp%3Fhl%3Dpl%26sa%3DX%26ved%3D0ahUKEwimza_x5OuNAxVrGhAIHRvSF4EQPAgI&dsh=S-1942595067%3A1749729007943672&ec=futura_exp_og_so_72776762_e&flowEntry=ServiceLogin&flowName=GlifWebSignIn&hl=pl&ifkv=AdBytiPPb1O39J6JXT_KO2WbJ2hwludnugbZomk_3i2zBGD3hYS3B8fOB-Q95aeJOPtGpAM7XiZXog
+(httrack https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.google.com%2Fwebhp%3Fhl%3Dpl%26sa%3DX%26ved%3D0ahUKEwimza_x5OuNAxVrGhAIHRvSF4EQPAgI&dsh=S-1942595067%3A1749729007943672&ec=futura_exp_og_so_72776762_e&flowEntry=ServiceLogin&flowName=GlifWebSignIn&hl=pl&ifkv=AdBytiPPb1O39J6JXT_KO2WbJ2hwludnugbZomk_3i2zBGD3hYS3B8fOB-Q95aeJOPtGpAM7XiZXog -O /home/kali/router_nds/html -r3 )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+13:55:11	Error: 	"Not Found" (404) at link https://accounts.google.com/v3/signin/https: (from https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.google.com%2Fwebhp%3Fhl%3Dpl%26sa%3DX%26ved%3D0ahUKEwimza_x5OuNAxVrGhAIHRvSF4EQPAgI&dsh=S-1942595067%3A1749729007943672&ec=futura_exp_og_so_72776762_e&flowEntry=ServiceLogin&flowName=GlifWebSignIn&hl=pl&ifkv=AdBytiPPb1O39J6JXT_KO2WbJ2hwludnugbZomk_3i2zBGD3hYS3B8fOB-Q95aeJOPtGpAM7XiZXog)
+13:55:11	Error: 	"Bad Request" (400) at link https://accounts.google.com/v3/signin/rejected (from https://accounts.google.com/v3/signin/rejected?continue=https://www.google.com/webhp?hl%3Dpl%26sa%3DX%26ved%3D0ahUKEwimza_x5OuNAxVrGhAIHRvSF4EQPAgI&dsh=S-1942595067:1749729007943672&ec=futura_exp_og_so_72776762_e&flowEntry=ServiceLogin&flowName=GlifWebSignIn&hl=pl&ifkv=AdBytiPPb1O39J6JXT_KO2WbJ2hwludnugbZomk_3i2zBGD3hYS3B8fOB-Q95aeJOPtGpAM7XiZXog&rhlk=js&rrk=47)
+
+HTTrack Website Copier/3.49-6 mirror complete in 9 seconds : 5 links scanned, 2 files written (2177947 bytes overall), 3 files updated [282490 bytes received at 31387 bytes/sec], 2181398 bytes transferred using HTTP compression in 5 files, ratio 12%
+(2 errors, 0 warnings, 0 messages)
