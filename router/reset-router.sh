@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROUTER_DIR=/home/borys/router
+ROUTER_DIR=/home/borys/rpi/router
 LOG_DIR="$ROUTER_DIR/logs"
 
 echo "[*] Resetowanie routera Wi-Fi..."

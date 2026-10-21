@@ -5,6 +5,8 @@ import time
 import subprocess
 import psutil
 import re
+import pwd
+import os
 
 # Inicjalizacja wyświetlacza
 serial = i2c(port=1, address=0x3c)
@@ -12,6 +14,7 @@ device = sh1106(serial, width=128, height=64)
 
 # Domyślna czcionka
 font = ImageFont.load_default()
+ssh_user = pwd.getpwuid(os.getuid()).pw_name
 
 def system_ready():
     result = subprocess.run(["systemctl", "is-active", "--quiet", "ssh.service"])
@@ -107,6 +110,9 @@ def display_wifi_interface_info(interface):
     
     draw.text((label_x, 2 * line_height + 5), 'IP:', font=font, fill=255)
     draw.text((value_x, 2 * line_height + 5), ip, font=font, fill=255)
+
+    draw.text((label_x, 3 * line_height + 5), 'SSH:', font=font, fill=255)
+    draw.text((value_x, 3 * line_height + 5), ssh_user, font=font, fill=255)
 
     device.display(image)
 

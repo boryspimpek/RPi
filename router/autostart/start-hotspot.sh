@@ -1,19 +1,25 @@
 #!/bin/bash
+set -euo pipefail
+export LC_ALL=C
 
-LOGFILE=/home/borys/router/logs/hotspot-check.log
+ROUTER_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+LOGFILE="$ROUTER_DIR/logs/hotspot-check.log"
 mkdir -p "$(dirname "$LOGFILE")"
 
-echo "[$(date)] Sprawdzanie połączenia WiFi..." >> "$LOGFILE"
+echo "[$(date)] Sprawdzanie połączenia wszystkich kart WiFi..." >> "$LOGFILE"
 
-# Czekamy na ewentualne połączenie (autoconnect)
+# Daj NetworkManagerowi czas na autoconnect.
 sleep 45
 
-# Sprawdź status wlan0
-WIFI_STATUS=$(nmcli -t -f DEVICE,STATE dev | grep '^wlan0:' | cut -d: -f2)
+# Wymagamy połączenia klienta z routerem; własny AP się nie liczy.
+DEVICES=$(nmcli -t -f DEVICE,TYPE,STATE device)
+while IFS=: read -r interface type state; do
+    if [[ "$type" == "wifi" && "$state" == "connected" ]] &&
+       iw dev "$interface" link 2>/dev/null | grep -q '^Connected to '; then
+        echo "[$(date)] $interface połączone z WiFi — hotspot niepotrzebny." >> "$LOGFILE"
+        exit 0
+    fi
+done <<< "$DEVICES"
 
-if [[ "$WIFI_STATUS" == "connected" ]]; then
-    echo "[$(date)] wlan0 połączone z WiFi — hotspot niepotrzebny." >> "$LOGFILE"
-else
-    echo "[$(date)] wlan0 NIE jest połączone — uruchamiam hotspot!" >> "$LOGFILE"
-    /home/borys/router/start-router.sh >> "$LOGFILE" 2>&1
-fi
+echo "[$(date)] Brak połączenia z routerem na wszystkich kartach WiFi — uruchamiam hotspot!" >> "$LOGFILE"
+exec "$ROUTER_DIR/start-router.sh" >> "$LOGFILE" 2>&1

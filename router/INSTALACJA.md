@@ -8,19 +8,20 @@ Po każdym starcie systemu:
 
 1. Usługa systemd czeka na sieć (`network-online.target`).
 2. Skrypt `autostart/start-hotspot.sh` czeka **45 sekund** — NetworkManager ma czas połączyć się z zapisaną siecią Wi-Fi.
-3. Sprawdza stan **`wlan0`**:
-   - jeśli `wlan0` jest połączone z Wi-Fi → hotspot **nie startuje**;
-   - jeśli `wlan0` **nie** jest połączone → uruchamia hotspot (**SSID: Rosomaki**) na `wlan0`.
+3. Sprawdza wszystkie karty Wi-Fi zarządzane przez NetworkManager:
+   - jeśli dowolna karta jest połączona z routerem → hotspot **nie startuje**;
+   - jeśli żadna karta nie jest połączona → uruchamia hotspot (**SSID: Rosomaki**) na `wlan0`.
 
-### Scenariusze
+Połączenie jest potwierdzane przez `iw dev INTERFEJS link`, więc własny AP nie
+jest traktowany jako połączenie z routerem. Dostęp do internetu nie jest wymagany:
+wystarczy połączenie z lokalną siecią. Sprawdzenie odbywa się raz przy starcie;
+późniejsze rozłączenie nie uruchamia automatycznie hotspotu.
 
 | Sytuacja | Efekt |
 |---|---|
-| Jedna karta Wi-Fi, znana sieć w zasięgu | `wlan0` łączy się z internetem, brak hotspota |
-| Jedna karta Wi-Fi, obce miejsce | `wlan0` nie ma sieci → hotspot do komunikacji z RPi |
-| Dwie karty Wi-Fi (np. `wlan0` + `wlan2`) | NM zwykle łączy internet na jednej karcie, `wlan0` zostaje wolne → hotspot na `wlan0` |
-
-> **Uwaga:** Skrypt patrzy wyłącznie na `wlan0`. Nie sprawdza, czy inna karta (np. `wlan2`) ma internet.
+| Dowolna karta Wi-Fi połączona z routerem | Brak hotspota |
+| Żadna karta Wi-Fi nie jest połączona | Hotspot na `wlan0` |
+| Tylko Ethernet połączony | Hotspot na `wlan0`, internet przez kabel |
 
 Hotspot udostępnia sieć `10.42.42.0/24`, brama i DNS: `10.42.42.1`.
 
@@ -33,7 +34,7 @@ NAT w `start-router.sh` jest skonfigurowany przez **`eth0`** (kabel). Klienci ho
 - Raspberry Pi z interfejsem Wi-Fi `wlan0` (wbudowany lub pierwszy w systemie)
 - NetworkManager (`nmcli`)
 - Użytkownik w grupie `sudo`
-- Ścieżka instalacji: **`/home/borys/router`** (skrypty mają wpisane ścieżki absolutne)
+- Ścieżka instalacji: **`/home/borys/rpi/router`** (skrypty mają wpisane ścieżki absolutne)
 
 ---
 
@@ -41,7 +42,7 @@ NAT w `start-router.sh` jest skonfigurowany przez **`eth0`** (kabel). Klienci ho
 
 ```bash
 sudo apt update
-sudo apt install -y network-manager hostapd dnsmasq iptables
+sudo apt install -y network-manager hostapd dnsmasq iptables iw
 ```
 
 Wyłącz domyślne usługi, żeby nie kolidowały z ręcznym uruchomieniem:
@@ -65,30 +66,30 @@ sudo rfkill unblock wifi
 Skopiuj zawartość tego folderu do docelowej lokalizacji:
 
 ```bash
-mkdir -p /home/borys/router
-cp -a /ścieżka/do/kopii/router/. /home/borys/router/
+mkdir -p /home/borys/rpi/router
+cp -a /ścieżka/do/kopii/router/. /home/borys/rpi/router/
 ```
 
 Albo sklonuj repo `RPi` i weź stamtąd folder `router/`:
 
 ```bash
 git clone git@github.com:boryspimpek/RPi.git /tmp/rpi
-cp -a /tmp/rpi/router/. /home/borys/router/
+cp -a /tmp/rpi/router/. /home/borys/rpi/router/
 ```
 
 Nadaj uprawnienia wykonywania:
 
 ```bash
-chmod +x /home/borys/router/*.sh
-chmod +x /home/borys/router/autostart/*.sh
-mkdir -p /home/borys/router/logs
+chmod +x /home/borys/rpi/router/*.sh
+chmod +x /home/borys/rpi/router/autostart/*.sh
+mkdir -p /home/borys/rpi/router/logs
 ```
 
 ---
 
 ## Krok 3 — Dostosuj hotspot (opcjonalnie)
 
-Edytuj `/home/borys/router/hostapd.conf`:
+Edytuj `/home/borys/rpi/router/hostapd.conf`:
 
 | Parametr | Domyślnie | Opis |
 |---|---|---|
@@ -111,7 +112,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/home/borys/router/autostart/start-hotspot.sh
+ExecStart=/home/borys/rpi/router/autostart/start-hotspot.sh
 
 [Install]
 WantedBy=multi-user.target
@@ -140,13 +141,13 @@ Po ~1 minucie sprawdź:
 iw dev wlan0 info          # type AP = hotspot działa
 ip addr show wlan0         # 10.42.42.1/24
 systemctl status start-hotspot.service
-tail -20 /home/borys/router/logs/hotspot-check.log
+tail -20 /home/borys/rpi/router/logs/hotspot-check.log
 ```
 
 ### Ręczny test bez restartu
 
 ```bash
-/home/borys/router/stop-router.sh          # zatrzymaj, jeśli działa
+/home/borys/rpi/router/stop-router.sh          # zatrzymaj, jeśli działa
 sudo systemctl start start-hotspot.service # uruchom logikę autostartu
 ```
 
@@ -162,13 +163,13 @@ ssh borys@10.42.42.1
 
 ```bash
 # Status hotspota i klientów
-/home/borys/router/status.sh
+/home/borys/rpi/router/status.sh
 
 # Zatrzymaj hotspot, przywróć wlan0 do NetworkManagera
-/home/borys/router/stop-router.sh
+/home/borys/rpi/router/stop-router.sh
 
 # Restart hotspota (zatrzymaj → uruchom od nowa)
-/home/borys/router/reset-router.sh
+/home/borys/rpi/router/reset-router.sh
 
 # Wyłącz autostart przy bootcie
 sudo systemctl disable start-hotspot.service
@@ -183,8 +184,8 @@ sudo systemctl enable start-hotspot.service
 
 | Plik | Zawartość |
 |---|---|
-| `/home/borys/router/logs/hotspot-check.log` | Decyzja: hotspot tak/nie |
-| `/home/borys/router/logs/dnsmasq.log` | DHCP i DNS |
+| `/home/borys/rpi/router/logs/hotspot-check.log` | Decyzja: hotspot tak/nie |
+| `/home/borys/rpi/router/logs/dnsmasq.log` | DHCP i DNS |
 | `journalctl -u start-hotspot.service` | Logi usługi systemd |
 
 ---
@@ -195,11 +196,11 @@ sudo systemctl enable start-hotspot.service
 
 ```bash
 systemctl status start-hotspot.service
-cat /home/borys/router/logs/hotspot-check.log
-nmcli -t -f DEVICE,STATE dev | grep wlan0
+cat /home/borys/rpi/router/logs/hotspot-check.log
+nmcli -t -f DEVICE,TYPE,STATE dev
 ```
 
-Jeśli `wlan0` jest `connected`, hotspot celowo się nie włącza.
+Jeśli dowolna karta Wi-Fi jest połączona z routerem, hotspot celowo się nie włącza.
 
 ### `wlan0` nie wchodzi w tryb AP
 
@@ -207,7 +208,7 @@ Jeśli `wlan0` jest `connected`, hotspot celowo się nie włącza.
 sudo pkill hostapd
 sudo pkill dnsmasq
 nmcli device set wlan0 managed yes
-/home/borys/router/start-router.sh
+/home/borys/rpi/router/start-router.sh
 ```
 
 ### Konflikt portu 53 (dnsmasq)
@@ -218,7 +219,7 @@ Sprawdź, czy coś innego nasłuchuje na porcie 53 (np. `systemd-resolved`):
 sudo ss -ulnp | grep ':53'
 ```
 
-### Inna ścieżka niż `/home/borys/router`
+### Inna ścieżka niż `/home/borys/rpi/router`
 
 Zaktualizuj ścieżki w plikach:
 

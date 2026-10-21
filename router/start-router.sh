@@ -1,8 +1,8 @@
 #!/bin/bash
 
-LOG_DIR=/home/borys/router/logs
+LOG_DIR=/home/borys/rpi/router/logs
 HOSTAPD_LOG="$LOG_DIR/hostapd.log"
-HOSTAPD_CONF=/home/borys/router/hostapd.conf
+HOSTAPD_CONF=/home/borys/rpi/router/hostapd.conf
 mkdir -p "$LOG_DIR"
 
 echo "[*] Odłączanie wlan0 od NetworkManager..."
@@ -35,7 +35,7 @@ sudo pkill dnsmasq
 #done
 
 echo "[*] Uruchamianie dnsmasq z logowaniem..."
-sudo dnsmasq --conf-file=/home/borys/router/dnsmasq.conf --log-facility=$LOG_DIR/dnsmasq.log
+sudo dnsmasq --conf-file=/home/borys/rpi/router/dnsmasq.conf --log-facility=$LOG_DIR/dnsmasq.log
 
 echo "[*] Restartowanie hostapd z logowaniem..."
 sudo pkill hostapd

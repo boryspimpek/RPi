@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOGFILE="/home/borys/router/logs/dnsmasq.log"
+LOGFILE="/home/borys/rpi/router/logs/dnsmasq.log"
 
 echo "=============================="
 echo "📡 ŚLEDZENIE ZAPYTAŃ DNS (dnsmasq)"
