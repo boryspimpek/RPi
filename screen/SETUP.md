@@ -9,7 +9,7 @@ Zakłada: Ubuntu / Raspberry Pi OS na Raspberry Pi, użytkownik `borys`, ekran S
 Skopiuj gdzieś poza dysk (pendrive, inny komputer):
 
 ```
-/home/borys/screen/screen.py
+/home/borys/rpi/screen/screen.py
 ```
 
 Resztę (`screen_env`) odtworzysz od zera — nie ma sensu kopiować całego venv.
@@ -83,13 +83,13 @@ sudo apt install -y i2c-tools python3-venv python3-pip iw
 ## Krok 4 — Utwórz folder projektu i skopiuj skrypt
 
 ```bash
-mkdir -p /home/borys/screen
+mkdir -p /home/borys/rpi/screen
 ```
 
 Wklej tam swój `screen.py` (z kopii zapasowej). Albo skopiuj z pendrive:
 
 ```bash
-cp /ścieżka/do/kopii/screen.py /home/borys/screen/screen.py
+cp /ścieżka/do/kopii/screen.py /home/borys/rpi/screen/screen.py
 ```
 
 ---
@@ -97,7 +97,7 @@ cp /ścieżka/do/kopii/screen.py /home/borys/screen/screen.py
 ## Krok 5 — Utwórz wirtualne środowisko Python
 
 ```bash
-cd /home/borys/screen
+cd /home/borys/rpi/screen
 python3 -m venv screen_env
 screen_env/bin/pip install --upgrade pip
 screen_env/bin/pip install luma.oled pillow psutil
@@ -131,8 +131,8 @@ After=local-fs.target
 Before=network.target
 
 [Service]
-ExecStart=/home/borys/screen/screen_env/bin/python3 /home/borys/screen/screen.py
-WorkingDirectory=/home/borys/screen/
+ExecStart=/home/borys/rpi/screen/screen_env/bin/python3 /home/borys/rpi/screen/screen.py
+WorkingDirectory=/home/borys/rpi/screen/
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
@@ -188,8 +188,8 @@ ps aux | grep screen.py
 | Włączenie I2C | `/boot/firmware/config.txt` → `dtparam=i2c_arm=on` |
 | Uprawnienia | użytkownik `borys` w grupie `i2c` |
 | Pakiety systemowe | `i2c-tools`, `python3-venv`, `python3-pip`, `iw` |
-| Skrypt | `/home/borys/screen/screen.py` |
-| Biblioteki Python | `/home/borys/screen/screen_env/` |
+| Skrypt | `/home/borys/rpi/screen/screen.py` |
+| Biblioteki Python | `/home/borys/rpi/screen/screen_env/` |
 | Autostart | `/etc/systemd/system/screen.service` |
 
 ---
@@ -213,3 +213,22 @@ Te **nie są wymagane** do ekranu, ale mogą być w systemie:
 | `i2cdetect` nie pokazuje `3c` | sprawdź okablowanie SDA/SCL, zasilanie, adres |
 | Usługa pada przy starcie | uruchom ręcznie `screen_env/bin/python3 screen.py` i zobacz błąd |
 | `Failed to connect to system scope bus` w logach | nieszkodliwe — usługa startuje bardzo wcześnie; ekran i tak działa |
+
+## Po przeniesieniu projektu
+
+Ścieżki `ExecStart` i `WorkingDirectory` w `/etc/systemd/system/screen.service`
+muszą wskazywać aktualny katalog projektu. Stara ścieżka powoduje błąd
+`203/EXEC` i komunikat `No such file or directory`.
+
+Po poprawieniu ścieżek zastosuj zmiany i uruchom usługę ponownie:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl reset-failed screen.service
+sudo systemctl restart screen.service
+systemctl status screen.service --no-pager
+```
+
+Jeśli przenosisz również `screen_env`, najlepiej odtworzyć je zgodnie z krokiem 5:
+skrypty takie jak `pip` mogą nadal zawierać poprzednią ścieżkę. Do instalacji
+bibliotek można używać `screen_env/bin/python3 -m pip`.

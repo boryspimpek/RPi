@@ -9,7 +9,7 @@ Zakłada: Ubuntu / Raspberry Pi OS na Raspberry Pi 5 (lub równoważny z SPI), u
 Skopiuj gdzieś poza dysk (pendrive, inny komputer):
 
 ```
-/home/borys/led/led.py
+/home/borys/rpi/led/led.py
 ```
 
 Resztę (`.venv`) odtworzysz od zera — nie ma sensu kopiować całego venv.
@@ -82,13 +82,13 @@ sudo apt install -y python3-venv python3-pip python3-dev iputils-ping
 ## Krok 4 — Utwórz folder projektu i skopiuj skrypt
 
 ```bash
-mkdir -p /home/borys/led
+mkdir -p /home/borys/rpi/led
 ```
 
 Wklej tam swój `led.py` (z kopii zapasowej). Albo skopiuj z pendrive:
 
 ```bash
-cp /ścieżka/do/kopii/led.py /home/borys/led/led.py
+cp /ścieżka/do/kopii/led.py /home/borys/rpi/led/led.py
 ```
 
 ### Parametry w skrypcie
@@ -112,7 +112,7 @@ Jeśli masz inny pasek, zmień liczbę diod przed uruchomieniem.
 ## Krok 5 — Utwórz wirtualne środowisko Python
 
 ```bash
-cd /home/borys/led
+cd /home/borys/rpi/led
 python3 -m venv .venv
 .venv/bin/pip install --upgrade pip
 .venv/bin/pip install pi5neo
@@ -150,8 +150,8 @@ After=local-fs.target
 Before=network.target
 
 [Service]
-ExecStart=/home/borys/led/.venv/bin/python /home/borys/led/led.py
-WorkingDirectory=/home/borys/led
+ExecStart=/home/borys/rpi/led/.venv/bin/python /home/borys/rpi/led/led.py
+WorkingDirectory=/home/borys/rpi/led
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
@@ -206,8 +206,8 @@ ps aux | grep led.py
 | Włączenie SPI | `/boot/firmware/config.txt` → `dtparam=spi=on` |
 | Uprawnienia | użytkownik `borys` w grupie `spi` |
 | Pakiety systemowe | `python3-venv`, `python3-pip`, `python3-dev`, `iputils-ping` |
-| Skrypt | `/home/borys/led/led.py` |
-| Biblioteki Python | `/home/borys/led/.venv/` |
+| Skrypt | `/home/borys/rpi/led/led.py` |
+| Biblioteki Python | `/home/borys/rpi/led/.venv/` |
 | Autostart | `/etc/systemd/system/led.service` |
 
 ---
@@ -246,4 +246,23 @@ dtparam=i2c_arm=on
 dtparam=spi=on
 ```
 
-Użytkownik `borys` powinien być w grupach **`i2c`** i **`spi`**. Instrukcja ekranu: `/home/borys/screen/SETUP.md`.
+Użytkownik `borys` powinien być w grupach **`i2c`** i **`spi`**. Instrukcja ekranu: `/home/borys/rpi/screen/SETUP.md`.
+
+## Po przeniesieniu projektu
+
+Ścieżki `ExecStart` i `WorkingDirectory` w `/etc/systemd/system/led.service`
+muszą wskazywać aktualny katalog projektu. Stara ścieżka powoduje błąd
+`203/EXEC` i komunikat `No such file or directory`.
+
+Po poprawieniu ścieżek:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl reset-failed led.service
+sudo systemctl restart led.service
+systemctl status led.service --no-pager
+```
+
+Po przeniesieniu `.venv` najlepiej odtworzyć je zgodnie z krokiem 5.
+Skrypty takie jak `pip` mogą zawierać starą ścieżkę; do instalacji bibliotek
+można używać `.venv/bin/python -m pip`.
