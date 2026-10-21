@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 echo "[*] Odłączanie wlan0 od NetworkManager..."
 nmcli device set wlan0 managed no
 nmcli device disconnect wlan0
