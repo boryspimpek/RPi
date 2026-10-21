@@ -7,6 +7,7 @@ import psutil
 import re
 import pwd
 import os
+from pathlib import Path
 
 # Inicjalizacja wyświetlacza
 serial = i2c(port=1, address=0x3c)
@@ -91,8 +92,54 @@ def get_wifi_info(interface):
     
     return ssid, ip
 
+def get_hotspot_config(interface):
+    """Zwraca dane hotspotu tylko dla interfejsu działającego w trybie AP."""
+    result = subprocess.run(
+        ['iw', 'dev', interface, 'info'], capture_output=True, text=True
+    )
+    if result.returncode or not re.search(r'^\s*type AP\s*$', result.stdout, re.MULTILINE):
+        return None
+    try:
+        config = {}
+        path = Path(__file__).resolve().parent.parent / 'router' / 'hostapd.conf'
+        for line in path.read_text().splitlines():
+            if line.strip() and not line.lstrip().startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                config[key.strip()] = value.strip()
+        return config if config.get('interface') == interface else None
+    except OSError as error:
+        print(f'Nie można odczytać konfiguracji hotspotu: {error}')
+        return None
+
+def display_hotspot_credentials(config):
+    # Zawijaj według szerokości w pikselach, bez obcinania hasła.
+    rows = []
+    for label, value in [('SSID:', config.get('ssid', '?')),
+                         ('Haslo WiFi:', config.get('wpa_passphrase', '(brak)'))]:
+        rows.append(label)
+        part = ''
+        for character in value:
+            if part and font.getlength(part + character) > device.width:
+                rows.append(part)
+                part = ''
+            part += character
+        rows.append(part)
+    for offset in range(0, len(rows), 4):
+        image = Image.new('1', (device.width, device.height))
+        draw = ImageDraw.Draw(image)
+        draw.text((0, 0), 'HOTSPOT WIFI', font=font, fill=255)
+        draw.line([(0, 12), (127, 12)], fill=255)
+        for index, row in enumerate(rows[offset:offset + 4]):
+            draw.text((0, 14 + index * 12), row, font=font, fill=255)
+        device.display(image)
+        time.sleep(5)
+
 def display_wifi_interface_info(interface):
     ssid, ip = get_wifi_info(interface)
+    hotspot = get_hotspot_config(interface)
+    if hotspot:
+        ssid = hotspot.get('ssid', ssid)
+        display_hotspot_credentials(hotspot)
 
     image = Image.new('1', (device.width, device.height))
     draw = ImageDraw.Draw(image)
